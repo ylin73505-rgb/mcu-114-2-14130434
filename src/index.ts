@@ -5,10 +5,9 @@ let products = [
   new Product(2, "金魚都能懂的 CSS 必學屬性", "博碩文化", 500, true, new Date("2024-4-10")),
 ];
 
-console.table(products);
+console.log(products);
 
-const product = products[0];
-setProductDisplay(products[0]!, false);
+products[0]!.setDisplay(false);
 
 console.table(products);
 
