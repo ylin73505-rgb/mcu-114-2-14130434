@@ -1,5 +1,5 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, input, model, numberAttribute } from '@angular/core';
+import { Component, input, model, numberAttribute, output } from '@angular/core';
 
 @Component({
   selector: 'app-product-card',
@@ -24,6 +24,8 @@ export class ProductCardComponent {
   readonly createDate = input<Date>();
 
   readonly price = input<number, string | number>(0, { transform: numberAttribute });
+
+  readonly view = output<void>();
 
   onSetDisplay(isShow: boolean): void {
     this.isShow.set(isShow);
