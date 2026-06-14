@@ -74,4 +74,8 @@ export class ProductService {
     const index = this._data.findIndex(({ id }) => id === productId);
     this._data.splice(index, 1);
   }
+
+  getById(productId: number): Product {
+    return this._data.find(({ id }) => id === productId)!;
+  }
 }
