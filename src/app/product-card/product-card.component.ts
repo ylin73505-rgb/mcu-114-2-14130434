@@ -25,6 +25,10 @@ export class ProductCardComponent {
 
   readonly price = input<number, string | number>(0, { transform: numberAttribute });
 
+  readonly edit = output<void>();
+
+  readonly remove = output<void>();
+
   readonly view = output<void>();
 
   onSetDisplay(isShow: boolean): void {
