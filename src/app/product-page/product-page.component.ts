@@ -1,7 +1,9 @@
-import { Component, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { ProductCardListComponent } from '../product-card-list/product-card-list.component';
+import { rxResource } from '@angular/core/rxjs-interop';
+
 import { Product } from '../model/product';
+import { ProductCardListComponent } from '../product-card-list/product-card-list.component';
 import { ProductService } from '../services/product.service';
 import { PaginationComponent } from '../pagination/pagination.component';
 
@@ -18,19 +20,27 @@ export class ProductPageComponent implements OnInit {
 
   protected readonly pageIndex = signal(1);
 
-  protected readonly pageSize = signal(2);
+  protected readonly pageSize = signal(5);
 
-  protected readonly totalCount = signal(0);
+  private readonly data = rxResource({
+    params: () => ({ pageIndex: this.pageIndex(), pageSize: this.pageSize() }),
+    defaultValue: { data: [], count: 0 },
+    stream: ({ params }) => {
+      const { pageIndex, pageSize } = params;
+      return this.productService.getList(undefined, pageIndex, pageSize);
+    },
+  });
 
-  protected readonly products = signal<Product[]>([]);
+  protected readonly totalCount = computed(() => {
+    const { count } = this.data.value();
+    return count;
+  });
 
-  constructor() {
-    effect(() => {
-      const pageIndex = this.pageIndex();
-      const pageSize = this.pageSize();
-      this.getProducts(pageIndex, pageSize);
-    });
-  }
+  protected readonly products = computed(() => {
+    const { data } = this.data.value();
+    return data;
+  });
+
   ngOnInit(): void {
     throw new Error('Method not implemented.');
   }
@@ -43,13 +53,6 @@ export class ProductPageComponent implements OnInit {
     this.router.navigate(['product', 'view', product.id]);
   }
 
-  private getProducts(pageIndex: number, pageSize: number): void {
-    this.productService.getList(undefined, pageIndex, this.pageSize()).subscribe(({ data, count }) => {
-      this.products.set(data);
-      this.totalCount.set(count);
-    });
-  }
-
   onAdd(): void {
     const product = new Product({
       name: '書籍 Z',
@@ -60,13 +63,10 @@ export class ProductPageComponent implements OnInit {
       createDate: new Date('2025/4/9'),
       price: 10000,
     });
-    this.productService.add(product).subscribe(() => this.getProducts(this.pageIndex(), this.pageSize()));
+    this.productService.add(product).subscribe(() => this.data.reload());
   }
 
   onRemove({ id }: Product): void {
-    this.productService.remove(id).subscribe(() => {
-      this.pageIndex.set(1);
-      this.getProducts(this.pageIndex(), this.pageSize());
-    });
+    this.productService.remove(id).subscribe(() => this.pageIndex.set(1));
   }
 }
