@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProductCardListComponent } from '../product-card-list/product-card-list.component';
 import { Product } from '../model/product';
@@ -11,7 +11,7 @@ import { PaginationComponent } from '../pagination/pagination.component';
   templateUrl: './product-page.component.html',
   styleUrl: './product-page.component.scss',
 })
-export class ProductPageComponent {
+export class ProductPageComponent implements OnInit {
   private readonly router = inject(Router);
 
   private readonly productService = inject(ProductService);
@@ -31,6 +31,9 @@ export class ProductPageComponent {
       this.getProducts(pageIndex, pageSize);
     });
   }
+  ngOnInit(): void {
+    throw new Error('Method not implemented.');
+  }
 
   onEdit(product: Product): void {
     this.router.navigate(['product', 'form', product.id]);
@@ -41,9 +44,10 @@ export class ProductPageComponent {
   }
 
   private getProducts(pageIndex: number, pageSize: number): void {
-    const { data, count } = this.productService.getList(undefined, pageIndex, pageSize);
-    this.products.set(data);
-    this.totalCount.set(count);
+    this.productService.getList(undefined, pageIndex, this.pageSize()).subscribe(({ data, count }) => {
+      this.products.set(data);
+      this.totalCount.set(count);
+    });
   }
 
   protected onAdd(): void {
