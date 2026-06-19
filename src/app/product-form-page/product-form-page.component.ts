@@ -3,7 +3,8 @@ import { Component, input, inject, effect } from '@angular/core';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
-import { Product } from '../models/product';
+import { Product } from '../model/product';
+import { ProductService } from '../services/product.service';
 
 @Component({
   selector: 'app-product-form-page',
@@ -39,7 +40,7 @@ export class ProductFormPageComponent {
   }
 
   get isShow(): FormControl<boolean> {
-    return this.form.get('isShow') as FormControl<boolean>;
+    return this.form.get('isShow') as unknown as FormControl<boolean>;
   }
 
   get company(): FormControl<string | null> {
