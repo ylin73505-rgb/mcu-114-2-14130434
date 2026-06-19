@@ -34,4 +34,9 @@ export class ProductRemoteService extends ProductService {
     const url = `${this.url}/${productId}`;
     return this.httpClient.delete<Product>(url);
   }
+
+  override update(product: Readonly<Product>): Observable<Product> {
+    const url = `${this.url}/${product.id}`;
+    return this.httpClient.put<Product>(url, product);
+  }
 }

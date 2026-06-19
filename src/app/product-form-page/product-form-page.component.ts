@@ -1,10 +1,9 @@
 import { JsonPipe } from '@angular/common';
-import { Component, input, inject } from '@angular/core';
+import { Component, input, inject, effect } from '@angular/core';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
-import { Product } from '../model/product';
-import { ProductService } from '../services/product.service';
+import { Product } from '../models/product';
 
 @Component({
   selector: 'app-product-form-page',
@@ -27,6 +26,10 @@ export class ProductFormPageComponent {
     price: new FormControl<number | null>(null, { validators: [Validators.required] }),
   });
 
+  get id(): FormControl<string | null> {
+    return this.form.get('id') as FormControl<string | null>;
+  }
+
   get name(): FormControl<string | null> {
     return this.form.get('name') as FormControl<string | null>;
   }
@@ -36,7 +39,7 @@ export class ProductFormPageComponent {
   }
 
   get isShow(): FormControl<boolean> {
-    return this.form.get('isShow') as unknown as FormControl<boolean>;
+    return this.form.get('isShow') as FormControl<boolean>;
   }
 
   get company(): FormControl<string | null> {
@@ -47,13 +50,26 @@ export class ProductFormPageComponent {
     return this.form.get('price') as FormControl<string | null>;
   }
 
-  protected onAddAuthor(): void {
-    const formControl = new FormControl<string | null>(null, { validators: [Validators.required] });
-    this.authors.push(formControl);
+  constructor() {
+    effect(() => {
+      const product = this.product();
+      if (product) {
+        this.onAddAuthor(product.authors.length);
+        this.form.patchValue(product);
+      }
+    });
+  }
+
+  protected onAddAuthor(count = 1): void {
+    for (let i = 1; i <= count; i++) {
+      const formControl = new FormControl<string | null>(null, { validators: [Validators.required] });
+      this.authors.push(formControl);
+    }
   }
 
   protected onSave(): void {
     const formData = new Product({
+      id: this.id.value || undefined,
       name: this.name.value!,
       authors: this.authors.value.map((author) => author!),
       company: this.company.value!,
@@ -62,7 +78,8 @@ export class ProductFormPageComponent {
       createDate: new Date(),
       price: +(this.price.value || '0'),
     });
-    this.productService.add(formData).subscribe(() => this.router.navigate(['products']));
+    const action$ = this.id.value ? this.productService.update(formData) : this.productService.add(formData);
+    action$.subscribe(() => this.router.navigate(['products']));
   }
 
   protected onCancel(): void {
