@@ -33,4 +33,18 @@ export class ProductAzureService extends ProductService {
       .get<{ items: Product[]; totalCount: number }>(this.url, { params })
       .pipe(map(({ items: data, totalCount: count }) => ({ data, count })));
   }
+
+  override add(product: Readonly<Product>): Observable<Product> {
+    return this.httpClient.post<Product>(this.url, { ...product, studentId: this.studentId });
+  }
+
+  override update(product: Readonly<Product>): Observable<Product> {
+    const url = `${this.url}/${product.id}`;
+    return this.httpClient.put<Product>(url, { ...product, studentId: this.studentId });
+  }
+
+  override remove(productId: string): Observable<Product> {
+    const url = `${this.url}/${productId}`;
+    return this.httpClient.delete<Product>(url);
+  }
 }
